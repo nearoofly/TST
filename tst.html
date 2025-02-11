@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Taux de Satisfaction Téléphonique</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f4f4f4;
+      margin: 20px;
+    }
+    .container {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      max-width: 900px;
+      margin: auto;
+    }
+    h1 {
+      color: #333;
+    }
+    .map-container {
+      display: flex;
+      justify-content: center;
+      margin: 20px 0;
+    }
+    #map, #map2 {
+      height: 300px;
+      width: 100%;
+    }
+    .satisfaction-list {
+      margin-top: 20px;
+    }
+    .region-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .progress-container {
+      flex: 1;
+      background: #ddd;
+      border-radius: 20px;
+      overflow: hidden;
+      height: 35px;
+      margin: 0 10px;
+      position: relative;
+    }
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(to right, #4caf50, #8bc34a);
+      text-align: center;
+      line-height: 35px;
+      color: white;
+      font-weight: bold;
+      transition: width 0.3s ease-in-out;
+    }
+    .btn {
+      padding: 5px 10px;
+      border: none;
+      cursor: pointer;
+      background: #4caf50;
+      color: white;
+      font-size: 14px;
+      border-radius: 5px;
+      transition: background 0.3s;
+    }
+    .btn:hover {
+      background: #45a049;
+    }
+    footer {
+      margin-top: 20px;
+      padding: 10px;
+      background: #333;
+      color: white;
+    }
+
+
+
+
+
+
+
+
+/* Footer */
+footer {
+    background: #333;
+    color: white;
+    padding: 20px 0;
+    font-family: Arial, sans-serif;
+}
+
+.footer-container {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    max-width: 1000px;
+    margin: auto;
+}
+
+.footer-section {
+    text-align: center;
+    flex: 1;
+    margin: 10px;
+}
+
+.footer-section h3 {
+    margin-bottom: 10px;
+    font-size: 18px;
+}
+
+.footer-section ul {
+    list-style: none;
+    padding: 0;
+}
+
+.footer-section ul li {
+    margin: 5px 0;
+}
+
+.footer-section ul li a {
+    color: white;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.footer-section ul li a:hover {
+    color: #4caf50;
+}
+
+.flags img {
+    width: 32px;
+    margin: 5px;
+    transition: transform 0.3s;
+}
+
+.flags img:hover {
+    transform: scale(1.1);
+}
+
+/* Droits d'auteur tout en bas avec effet miroir réaliste */
+.footer-bottom {
+    text-align: center;
+    padding: 15px;
+    background: linear-gradient(to bottom, #b0b0b0, #e0e0e0, #b0b0b0); /* Effet miroir plus neutre */
+    color: white;
+    font-size: 14px;
+    margin-top: 40px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    box-shadow: 0px -3px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Politiques */
+.policies {
+    background: #f9f9f9;
+    padding: 20px;
+    margin: 20px auto;
+    max-width: 800px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.policies h2 {
+    color: #333;
+    border-bottom: 2px solid #4caf50;
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+}
+
+.policies p, .policies ul {
+    color: #555;
+    line-height: 1.5;
+}
+
+.policies ul {
+    padding-left: 20px;
+}
+
+
+
+
+
+  .alert-hidden {
+    display: none;
+  }
+  .alert-visible {
+    display: block;
+    background: red;
+    color: white;
+    padding: 10px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    font-size: 18px;
+  }
+
+
+
+  </style>
+
+
+
+  
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+  <script>
+    let map, map2;
+    const regions = [
+      { nom: 'Grand Est', taux: 77, lat: 48.666, lng: 5.884 },
+      { nom: 'Ile-de-France', taux: 62, lat: 48.8566, lng: 2.3522 },
+      { nom: 'Corse', taux: 64, lat: 42.0396, lng: 9.0129 },
+      { nom: 'Provence-Alpes-CA', taux: 80, lat: 43.8344, lng: 6.0469 },
+      { nom: 'Auvergne-R-A', taux: 75, lat: 45.748, lng: 4.8467 },
+      { nom: 'Bretagne', taux: 70, lat: 48.114, lng: -2.846 },
+      { nom: 'Normandie', taux: 68, lat: 49.4144, lng: 0.8321 },
+      { nom: 'Hauts-de-France', taux: 74, lat: 50.6292, lng: 3.0573 },
+      { nom: 'Pays de la Loire', taux: 78, lat: 47.3495, lng: -0.7344 },
+      { nom: 'Occitanie', taux: 69, lat: 43.6113, lng: 3.8767 },
+      { nom: 'Centre-Val de Loire', taux: 66, lat: 47.3495, lng: 1.5700 },
+      { nom: 'Nouvelle-Aquitaine', taux: 72, lat: 44.8378, lng: -0.5792 },
+      { nom: 'Bourgogne-F-Comté', taux: 67, lat: 47.321, lng: 5.0415 }
+    ];
+
+    function initMap() {
+      map = L.map('map').setView([46.603354, 1.888334], 6);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+      
+      map2 = L.map('map2').setView([46.603354, 1.888334], 6);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map2);
+
+      regions.forEach(addMarker);
+      afficherRegions();
+    }
+
+    function addMarker(region) {
+      const color = getRegionColor(region.taux);
+      const marker = L.circleMarker([region.lat, region.lng], {
+        radius: 8,
+        fillColor: color,
+        color: color,
+        weight: 1,
+        opacity: 1,
+        fillOpacity: 0.8
+      }).addTo(map2);
+      marker.bindPopup("<b>" + region.nom + "</b><br>Taux de satisfaction: " + region.taux + "%");
+    }
+
+    function getRegionColor(taux) {
+      if (taux >= 70) return '#4caf50';
+      else if (taux >= 65) return 'orange';
+      else return 'red';
+    }
+
+    function afficherRegions() {
+      const regionList = document.getElementById("regionList");
+      regionList.innerHTML = "<h2>Modifier les Taux de Satisfaction</h2>";
+      regions.forEach((region, index) => {
+        const div = document.createElement("div");
+        div.className = "region-item";
+        div.innerHTML = `
+          <div>${region.nom}</div>
+          <div class="progress-container">
+            <div class="progress-bar" id="bar${index}" style="width: ${region.taux}%;">${region.taux}%</div>
+          </div>
+          <div>
+            <button class="btn" onclick="changerValeur(${index}, 5)">+5%</button>
+            <button class="btn" onclick="changerValeur(${index}, -5)">-5%</button>
+          </div>
+        `;
+        regionList.appendChild(div);
+      });
+    }
+
+    function changerValeur(index, delta) {
+      regions[index].taux += delta;
+      if (regions[index].taux > 100) regions[index].taux = 100;
+      if (regions[index].taux < 0) regions[index].taux = 0;
+      const bar = document.getElementById("bar" + index);
+      bar.innerText = regions[index].taux + "%";
+      bar.style.width = regions[index].taux + "%";
+      bar.style.background = getRegionColor(regions[index].taux);
+    }
+
+    window.onload = function() {
+      initMap();
+    };
+
+  </script>
+
+
+
+
+
+
+
+
+<script>  
+
+
+function verifierAlertes() {
+    const alertContainer = document.getElementById("alertContainer");
+    const alertList = document.getElementById("alertList");
+    alertList.innerHTML = "";
+
+    let regionsCritiques = regions.filter(region => region.taux < 60);
+
+    if (regionsCritiques.length > 0) {
+      alertContainer.classList.add("alert-visible");
+      alertContainer.classList.remove("alert-hidden");
+
+      regionsCritiques.forEach(region => {
+        let listItem = document.createElement("li");
+        listItem.textContent = region.nom + " : " + region.taux + "%";
+        alertList.appendChild(listItem);
+      });
+    } else {
+      alertContainer.classList.add("alert-hidden");
+      alertContainer.classList.remove("alert-visible");
+    }
+  }
+
+  function changerValeur(index, delta) {
+    regions[index].taux += delta;
+    if (regions[index].taux > 100) regions[index].taux = 100;
+    if (regions[index].taux < 0) regions[index].taux = 0;
+
+    const bar = document.getElementById("bar" + index);
+    bar.innerText = regions[index].taux + "%";
+    bar.style.width = regions[index].taux + "%";
+    bar.style.background = getRegionColor(regions[index].taux);
+
+    verifierAlertes(); // Vérifie s'il y a des alertes après modification
+  }
+
+  window.onload = function() {
+    initMap();
+    verifierAlertes(); // Vérifie au chargement
+  };
+
+</script>
+
+
+
+
+
+<script>
+
+// Tableau pour stocker les régions ajoutées par les utilisateurs
+let regions = [
+    { name: 'Grand Est', lat: 48.666, lng: 5.884, satisfaction: 77 },
+    { name: 'Ile-de-France', lat: 48.8566, lng: 2.3522, satisfaction: 62 },
+    { name: 'Corse', lat: 42.0396, lng: 9.0129, satisfaction: 64 },
+    { name: 'Provence-Alpes-Côte d\'Azur', lat: 43.8344, lng: 6.0469, satisfaction: 80 },
+    { name: 'Auvergne-Rhône-Alpes', lat: 45.748, lng: 4.8467, satisfaction: 75 },
+    { name: 'Bretagne', lat: 48.114, lng: -2.846, satisfaction: 70 },
+    { name: 'Normandie', lat: 49.4144, lng: 0.8321, satisfaction: 68 },
+    { name: 'Hauts-de-France', lat: 50.6292, lng: 3.0573, satisfaction: 74 },
+    { name: 'Pays de la Loire', lat: 47.3495, lng: -0.7344, satisfaction: 78 },
+    { name: 'Occitanie', lat: 43.6113, lng: 3.8767, satisfaction: 69 },
+    { name: 'Centre-Val de Loire', lat: 47.3495, lng: 1.5700, satisfaction: 66 },
+    { name: 'Nouvelle-Aquitaine', lat: 44.8378, lng: -0.5792, satisfaction: 72 },
+    { name: 'Bourgogne-Franche-Comté', lat: 47.321, lng: 5.0415, satisfaction: 67 }
+];
+
+// Fonction pour initialiser la carte
+function initMap() {
+    map = L.map('map').setView([46.603354, 1.888334], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    map2 = L.map('map2').setView([46.603354, 1.888334], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map2);
+
+    updateMap();
+}
+
+// Fonction pour mettre à jour la carte et ajouter les régions
+function updateMap() {
+    regions.forEach(region => {
+        const color = getRegionColor(region.satisfaction);
+        const marker = L.circleMarker([region.lat, region.lng], {
+            radius: 8,
+            fillColor: color,
+            color: color,
+            weight: 1,
+            opacity: 1,
+            fillOpacity: 0.8
+        }).addTo(map2);
+        
+        marker.bindPopup(`<b>${region.name}</b><br>Taux de satisfaction: ${region.satisfaction}%`);
+    });
+}
+
+// Fonction pour obtenir la couleur en fonction du taux de satisfaction
+function getRegionColor(satisfaction) {
+    if (satisfaction >= 70) return '#4caf50';
+    else if (satisfaction >= 65) return 'orange';
+    else return 'red';
+}
+
+// Gestionnaire d'événement pour le formulaire d'ajout de région
+document.getElementById('regionForm').addEventListener('submit', function(event) {
+    event.preventDefault(); // Empêche le formulaire de se soumettre normalement
+
+    // Récupérer les valeurs saisies par l'utilisateur
+    const regionName = document.getElementById('regionName').value;
+    const latitude = parseFloat(document.getElementById('latitude').value);
+    const longitude = parseFloat(document.getElementById('longitude').value);
+    const satisfaction = parseInt(document.getElementById('satisfaction').value);
+
+    // Ajouter la nouvelle région à la liste
+    regions.push({ name: regionName, lat: latitude, lng: longitude, satisfaction: satisfaction });
+
+    // Ajouter un nouveau marqueur à la carte
+    const color = getRegionColor(satisfaction);
+    const marker = L.circleMarker([latitude, longitude], {
+        radius: 8,
+        fillColor: color,
+        color: color,
+        weight: 1,
+        opacity: 1,
+        fillOpacity: 0.8
+    }).addTo(map2);
+
+    marker.bindPopup(`<b>${regionName}</b><br>Taux de satisfaction: ${satisfaction}%`);
+
+    // Ajouter la région à la liste affichée sous forme de barre de progression
+    const regionItem = document.createElement('div');
+    regionItem.classList.add('region-item');
+    regionItem.innerHTML = `
+        <span>${regionName}</span>
+        <button class="btn" onclick="changerValeur('${regionName}', 'map-${regionName.toLowerCase().replace(/\s+/g, '')}', -1)">-</button>
+        <div class="progress-container">
+            <div class="progress-bar" id="${regionName.toLowerCase().replace(/\s+/g, '')}">${satisfaction}%</div>
+        </div>
+        <button class="btn" onclick="changerValeur('${regionName}', 'map-${regionName.toLowerCase().replace(/\s+/g, '')}', 1)">+</button>
+    `;
+    document.querySelector('.satisfaction-list').appendChild(regionItem);
+
+    // Réinitialiser le formulaire
+    document.getElementById('regionForm').reset();
+});
+</script>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Taux de Satisfaction Téléphonique par Région</h1>
+
+    <div class="map-container">
+      <div id="map"></div>
+    </div>
+    <div class="map-container">
+      <div id="map2"></div>
+    </div>
+    <div class="satisfaction-list" id="regionList"></div>
+  </div>
+
+
+  <div id="alertContainer" class="alert-hidden">
+    🚨 <strong>Alerte Critique :</strong> Certaines régions ont un taux de satisfaction inférieur à 60% !
+    <ul id="alertList"></ul>
+  </div>
+
+
+<div class="add-region-form">
+    <h3>Ajouter une nouvelle région</h3>
+    <form id="regionForm">
+        <label for="regionName">Nom de la région :</label>
+        <input type="text" id="regionName" required><br><br>
+        
+        <label for="latitude">Latitude :</label>
+        <input type="number" id="latitude" required step="0.0001"><br><br>
+        
+        <label for="longitude">Longitude :</label>
+        <input type="number" id="longitude" required step="0.0001"><br><br>
+        
+        <label for="satisfaction">Taux de satisfaction :</label>
+        <input type="number" id="satisfaction" required min="0" max="100"><br><br>
+        
+        <button type="submit" class="btn">Ajouter la région</button>
+    </form>
+</div>
+
+
+
+
+
+
+
+<footer>
+    <div class="footer-container">
+        <!-- Section 1 : Mentions légales et politiques -->
+        <div class="footer-section">
+            <h3>Informations</h3>
+            <ul>
+                <li><a href="#mentions-legales">Mentions légales</a></li>
+                <li><a href="#confidentialite">Politique de confidentialité</a></li>
+                <li><a href="#cookies">Politique des cookies</a></li>
+                <li><a href="#conditions">Conditions générales</a></li>
+            </ul>
+        </div>
+
+        <!-- Section 2 : Sélecteur de langue avec drapeaux -->
+        <div class="footer-section">
+            <h3>Langue</h3>
+            <div class="flags">
+                <a href="#"><img src="https://flagcdn.com/w40/fr.png" alt="Français"></a>
+                <a href="#"><img src="https://flagcdn.com/w40/gb.png" alt="Anglais"></a>
+                <a href="#"><img src="https://flagcdn.com/w40/de.png" alt="Allemand"></a>
+                <a href="#"><img src="https://flagcdn.com/w40/es.png" alt="Espagnol"></a>
+                <a href="#"><img src="https://flagcdn.com/w40/it.png" alt="Italien"></a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- Droits d'auteur tout en bas -->
+<div class="footer-bottom">
+    &copy; 2025 Goofly. Tous droits réservés.
+</div>
+
+<!-- Sections des Politiques -->
+<div class="policies">
+    <div id="mentions-legales">
+        <h2>Mentions Légales</h2>
+        <p>Ce site est édité par <strong>Goofly</strong>, une entreprise spécialisée dans la communication digitale et les services web.</p>
+        <p><strong>Siège social :</strong> 10 rue des Entrepreneurs, 75015 Paris, France</p>
+        <p><strong>RCS :</strong> 123 456 789 Paris</p>
+        <p><strong>Directeur de publication :</strong> John Doe</p>
+        <p><strong>Hébergeur :</strong> OVH - 2 rue Kellermann, 59100 Roubaix, France</p>
+    </div>
+
+    <div id="confidentialite">
+        <h2>Politique de Confidentialité</h2>
+        <p>Nous nous engageons à protéger votre vie privée. Les informations personnelles collectées sur notre site sont utilisées uniquement pour améliorer nos services et personnaliser votre expérience.</p>
+        <p>Vous avez le droit d’accéder, modifier ou supprimer vos données personnelles en nous contactant à l’adresse suivante : <a href="mailto:contact@goofly.com">contact@goofly.com</a>.</p>
+    </div>
+
+    <div id="cookies">
+        <h2>Politique des Cookies</h2>
+        <p>Nous utilisons des cookies pour optimiser la navigation sur notre site. Vous pouvez gérer vos préférences de cookies via les paramètres de votre navigateur.</p>
+        <p>Types de cookies utilisés :</p>
+        <ul>
+            <li><strong>Cookies nécessaires :</strong> Assurent le bon fonctionnement du site.</li>
+            <li><strong>Cookies analytiques :</strong> Nous aident à améliorer le site en analysant l'utilisation.</li>
+            <li><strong>Cookies publicitaires :</strong> Permettent de personnaliser les annonces affichées.</li>
+        </ul>
+    </div>
+
+    <div id="conditions">
+        <h2>Conditions Générales d'Utilisation</h2>
+        <p>En accédant à ce site, vous acceptez les présentes conditions générales :</p>
+        <ul>
+            <li>Le contenu du site est protégé par les droits d’auteur.</li>
+            <li>L’utilisation frauduleuse du site ou de son contenu est interdite.</li>
+            <li>Nous ne sommes pas responsables des interruptions de service ou erreurs techniques.</li>
+        </ul>
+        <p>Pour toute question, contactez-nous à : <a href="wharklya@gmail.com">contact@goofly.com</a>.</p>
+    </div>
+</div>
+
+</body>
+</html>
